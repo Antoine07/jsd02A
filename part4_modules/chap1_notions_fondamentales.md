@@ -1,5 +1,9 @@
 # Import & export en JS Introduction
 
+## Définition module
+
+c'est du code métier que l'on écrit dans un fichier et qui pourra reservir dans d'autres programmes. Comme notre parser JS. Vous avez aussi des modules de la communauté des devéloppeurs qui sont publiés.
+
 Nous allons vous montrer dans deux contextes différents comment faire des import/export en ES6.
 
 Vous avez deux exemples dans le dossier Examples de ce chaptire :
@@ -44,7 +48,17 @@ Phrase parsing  891819 891819
 
 Vous ne pouvez faire qu'un export, de constante, fonction ou classe par défaut par fichier.
 
-Dans le fichier core/parse.js nous exportons la fonction parse que nous utilisons dans le fichier app.js
+Dans le fichier core/parse.js nous exportons la fonction parse que nous utilisons dans le fichier app.js.
+
+L'export default vous permet lors de l'import de le renommer.
+
+```js
+// Dans le fichier parse.js
+export default const parse = () => console.log("parsing...");
+
+// Dans le fichier app.js vous pouvez renommer cette constante
+import superParser from './core/parse.js';
+``` 
 
 ## export multiples
 
@@ -85,9 +99,44 @@ Si on importe des constantes, classes ou fonctions (export multiple) alors on ut
 
 ```js
 import { API, PASS } from './config';
+
+console.log(API, PASS);
+```
+
+Notez que vous pouvez utiliser des alias pour renommer vos import :
+
+```js
+import { API as myAPI , PASS as myPass } from './config';
+
+console.log(myAPI, myPass);
+```
+
+## Import multiple
+
+Vous pouvez également importer l'ensemble des éléments exportés à l'aide de la syntaxe suivante :
+
+```js
+
+import * as myCore from './core/utiles.js';
+
+```
+
+Pour le choix de l'alias vous êtes libre de choisir le nom que vous souhaitez. JS importera dans ce cas un objet de type module. Pour accéder aux éléments du module vous utiliserez la syntaxe classe suivante :
+
+```js
+myCore.API;
+myCore.parser("hello:");
+// ...
 ```
 
 ## Dans le contexte du navigateur Web (import/export)
+
+### Introduction
+
+Vous pouvez importer des scripts depuis un fichier externe avec la balise script dans la page HTML. Cette technique marche très bien, mais si vous avez de nombreux scripts à importer dans un projet donné, vous devez dans ce cas faire autant d'import avec cette balise que vous avez de scripts. Et dans ce cas vous ferez autant d'appel serveur que vous importez de scripts... De plus vous devez faire attention à l'ordre dans lequel vous devez faire l'import pour gérer les dépendances...
+De plus dans ce cas tous vos scripts partagent le même scope (...) C'est un problème car vous pouvez dans ce cas avoir des problèmes de re-définitions ou collisions de variables/fonctions.
+
+Nous allons voir comment on va créer un fichier "point d'entrée" qui importera l'ensemble de nos dépendances et que nous importerons dans notre page HTML.
 
 Récupérez l'exemple dans le dossier HTML dans le dossier Examples.
 

@@ -2,9 +2,11 @@
 
 ## Introduction
 
-Exécution du code de manière différée. Il permet également de gérer des actions qui "normalement" sont bloquantes. Chaque ligne est exécutée de manière synchrone, si une fonction prend du temps à s'exécuter le code synchrone attend la fin de son exécution.
+Un code asynchrone permet d'exécuter du code de manière différée. Il permet également de gérer des actions bloquantes en libérant l'exécution des autres scripts. 
 
-**JavaScript est synchrone et mono-thread**. Il n'y a qu'un seul fil d'exécution, stack, du code source, chaque ligne est exécuté de manière synchrone... Par contre les lignes asynchrones sont placées dans une file d'exécution (Task Queue). Toutes les fonctions asynchrones seront alors exécutées les unes à la suite des autres (par l'Event Loop), elles seront alors envoyées dans la stack d'exécution sans bloquer le reste de l'exécution (stack d'exécution synchrone). 
+Dans un code synchrone chaque ligne est exécutée l'une à la suite des autres, si une fonction prend du temps à s'exécuter le code synchrone attend la fin de son exécution avant de passer à la ligne suivante.
+
+**JavaScript est mono-thread et asynchrone**. Il n'y a qu'un seul fil d'exécution, stack, du code source, chaque ligne est exécuté de manière synchrone... Par contre les lignes asynchrones sont placées dans une file d'exécution (Task Queue). Toutes les fonctions asynchrones seront alors exécutées les unes à la suite des autres (par l'Event Loop), elles seront alors envoyées dans la stack d'exécution sans bloquer le reste de l'exécution (stack d'exécution synchrone). 
 
 Ce mécanisme dans JS est géré par : l'Event Loop qui remet les fonctions de callback dans la stack d'exécution. Ce mécanisme constitue le coeur de JS.
 
@@ -187,7 +189,7 @@ Vous avez un deuxième fichier relationship.json qui contient contient les relat
 
 En utilisant exclusivement les promesses, créez un tableau ou Map dans lequel vous placerez le nom des amis directs de chaque dragon.
 
-### Exercice fibonacci async
+### Exercice fibonacci async (**)
 
 Ecrivez un script qui retourne toutes les 500ms les nombres successifs de la suite de Fibonacci.
 
@@ -265,3 +267,11 @@ fetch( 'https://jsonplaceholder.typicode.com/users' )
     .then( res => res.json())
     .then( res => console.log(res))
 ```
+
+
+## Task queue 
+
+Les navigateurs priorisent certaines actions, comme par exemple un clique utilisateur.
+
+Soit un bouton click me suivant dans une page Web :
+

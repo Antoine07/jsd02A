@@ -436,7 +436,146 @@ const badPriceHT = [100.50, "hello", 55.7];
 console.log(sumTTC(...badPriceHT, .3));
 ```
 
-## Fonction fléchée
+## Le point sur le this des objets
+
+Le this d'un objet est déterminé par la manière dont vous allez appeler l'objet "contexte".
+
+L'objet sur lequel vous appelez la fonction détermine lors de l'appel le this :
+
+**objet.my_function()**
+
+```js
+'use strict';
+
+const o1 = {
+    f1 : function(){
+
+      return this;
+    }
+}
+
+console.log(o1.f1()) ; // this de o1
+
+const o2 = {
+    f2 : o1.f1
+}
+
+console.log(o2.f2()) ; // this de o2
+
+const o3 = o1.f1;
+
+console.log(o3()) ; // undefined
+```
+
+De même faite attention dans les fonction avec des callback, dans l'exemple qui suit setTimeout fera appel à la fonction sans reprendre le context de l'objet lui-même, this sera en mode strict undefined :
+
+```js
+setTimeout(o1.f1, 1000); // ici setTimeout appel la fonction f1.
+```
+
+Pour corriger ce problème il faut écrire :
+
+```js
+setTimeout(() => o1.f1() , 1000); // ici setTimeout appel la fonction f1.
+```
+
+## Fonction & fonction fléchée
+
+En JS vous avez des fonctions déclarées et des expressions de fonction.
+
+- fonction déclarée :
+
+```js
+function foo(){
+
+}
+```
+
+- Expression de fonction
+
+```js
+setTimeout( function (){
+
+})
+```
+
+### Exercice function & expression
+
+Nommez les types de fonction ci-dessous :
+
+```js
+const myFunc = function(){
+
+  function bar(){
+    // ...
+  }
+}
+```
+
+Les fonctions déclarées sont définies dès le début du script ou de la fonction qui la contient.
+
+Pour les expressions de fonction elles sont définies après leur évaluation.
+
+### Exercice déclaration
+
+Sans exécuter le code. 
+
+1. Est-ce que à votre avis le code suivant est valide ?
+
+```js
+bar();
+
+function bar(){
+  console.log("bar");
+}
+```
+
+2. Est-ce que à votre avis le code suivant est valide ?
+
+```js
+myFunc(); 
+
+const myFunc = function(){
+    console.log("Expression");
+}
+```
+
+### Arguments d'une fonction
+
+Vous n'êtes pas obligé de renseigner le nombre d'argument d'une fonction JS. La fonction possède en interne une propriété (objet) arguments qui récupère les paramètres de la fonction, attention arguments n'est pas un tableau :
+
+```js
+function sum(){
+  let total = 0;
+  for(let i =0; i < arguments.length; ++i ) total += arguments[i];
+
+  return total;
+}
+
+console.log(sum(1,2,3,4, 5, 6));
+```
+
+L'objet arguments peut-être converti en tableau à l'aide de la méthode from sur l'objet Array :
+
+```js
+const args = Array.from(arguments);
+
+```
+
+On peut par exemple définir la fonction sum en utilisant la méthode from :
+
+```js
+function sum(){
+  const args = Array.from(arguments);
+  
+  return [ ...args ].reduce( (acc, curr) => acc + curr );
+}
+
+console.log( sum(1,2,3,5) ); // 11
+
+```
+
+### Les fonctions fléchées
 
 Les fonctions fléchées (arrow function) permettent d'avoir une syntaxe plus courte pour définir facilement des fonctions de rappel comme map, filter, reducer ...
 
@@ -501,6 +640,131 @@ School.sayHello();
 School.sayHelloArrowFunc();
 ```
 
+Une fonction classique peut définir un constructeur, **pas une fonction flèchée**, dans ce cas par convention la fonction commence par une majuscule :
+
+```js
+
+function User(name){
+  // constructeur
+  this.name = name;
+
+  console.log(this.name);
+}
+
+const u1 = new user("Alan");
+const u2 = new user("Alan");
+
+// Le code qui suit produira une erreur 
+// pas de constructeur dans ce cas
+/*const userArrow = name => {
+  this.name = name;
+
+  console.log(this.name);
+}
+
+const uA1 = new userArrow("Alan");
+const uA2 = new userArrow("Alan");
+*/
+```
+
+Remarque, sur la fonction user et this. Si vous appelez la fonction constructeur this sans le mode strict prendra la valeur du contexte de la fonction : window par exemple... Si vous mettez le mode strict dans ce cas this est undefined et si vous appelez une propriété comme name ci-dessous une exception sera levée :
+
+```js
+'use strict';
+
+function User(name){
+  console.log(this);
+  this.name = name;
+}
+
+User('Alan'); // this undefined
+```
+
+
+Lorsque vous appelez une fonction comme méthode d'un objet, le this est le this de l'objet précédent l'appel de la méthode, dans l'exemple ci-dessous c'est l'objet Model :
+
+```js
+
+const Model = {
+    table : "Model",
+
+    subModel:function(){
+        console.log(this); // Objet model
+    },
+
+    // de manière totalement équivalente vous pour écrire ceci
+    // pour définir une méthode/fonction
+    subModel2(){
+      console.log(this); // Objet model
+    }
+}
+
+Model.subModel(); // this objet Model
+```
+
+### Exercice effet de bord
+
+Comment éviter l'effet de bord sur la propriété this (undefined) dans le code suivant? Proposez une solution.
+
+```js
+const log = {
+    count : 100,
+    save: function () {
+        'use strict';
+        console.log(this.count);
+    }
+}
+setTimeout(log.save, 500);
+```
+
+### prototype d'une fonction 
+
+```js
+
+const Student = {
+  name : '',
+  average : 17.5,
+  situation: function(){
+    console.log(`Name ${this.name} average : ${this.average}`);
+  }
+}
+```
+
+Cet objet possède une propriété **prototype**, elle listera l'ensemble des propriétés héritées depuis l'ojet Student. La quasi-totalité des objets JS héritent de l'objet **Object** de JS.
+
+```js
+Student.__proto__
+```
+
+Vous pouvez dès lors appeler des méthodes, qui ne sont pas directement disponibles (héritées) dans l'objet Student.
+
+### Comment ajouter une propriété sur un constructeur
+
+Reprenons l'exemple précédent, nous allons voir comment ajouter une propriété au constructeur User qui sera partagée par toutes les instances :
+
+```js
+'use strict';
+
+function User(name, lastname){
+  this.name = name;
+  this.lastname = lastname;
+}
+
+let u1 = new User('Alan', 'Phi'); 
+
+// On ajoute sur le constructeur lui-même la propriété
+User.prototype.fullName = function (){
+
+  return this.name + ' ' + this.lastname;
+}
+
+console.log(u1.fullName()); // Alan Phi
+```
+
+Quand JS appelle cette méthode il ne la trouvera pas dans l'instance de User mais dans le prototype de l'instance User. Le this est donc bien le this de l'instance de User. Cette technique permet donc de créer des méthodes partagées par toutes les instances de User. Notez que vous pouvez tout à fait définir la méthode fullName après avoir fait l'instance de User.
+
+JS possède depuis **ES6** un mot clé class pour définir une classe, nous verrons qu'en fait ce mot clé permet de définir, comme dans l'exemple précédent, un constructeur.
+
 ## Fonctions fléchées et fonction de rappel dans les tableaux
 
 Vous pouvez utiliser une fonction fléchée sur des collections en utilisant des fonctions comme map, filter ou reduce par exemple :
@@ -550,6 +814,10 @@ numbers.reduce((acc, curr) => curr + acc, 100);
 // 155
 ```
 
+### Exercice max
+
+Reprenez l'objet numbers (array) de numériques et utilisez la méthode reduce pour calculer le max.
+
 ### Exercice puissance 3 nombres pairs
 
 Soit la liste numbers d'entiers, filtrez les nombres pairs et les élever à la puissance 3.
@@ -586,7 +854,9 @@ Corrigez le code (ES5) suivant afin que le compteur s'incrémente correctement.
 // ES5
 const CounterV1 = {
   count: 0,
+  // la fonction callback function reçoit l'élément courant this
   counter: function() {
+    console.log(this.count); // affiche 0
     setInterval(function () {
       this.count++;
       console.log(this.count);
@@ -636,7 +906,7 @@ Il est parfois intéressant de renommer les clés, dans ce cas il faudra utilise
 
 ```js
 const student = { mention: "AB", note: 12 };
-const { mention: m, notes: n } = student;
+const { mention: m, note: n } = student;
 
 console.log(m); // AB
 console.log(n); // 12
@@ -664,10 +934,13 @@ const {
 Vous pouvez également destructurer un littéral en argument d'une fonction :
 
 ```js
-const student = { mention: "AB", notes: 12 };
+const student = { mention: "AB", note: 12 };
 const infoStudent = ({ mention, note }) => "info : " + mention + "note : " + note;
 
 infoStudent(student);
+
+//notez que vous pouvez également définir la fonction infoStudent sans vous souciez de l'ordre des clés :
+const infoStudent_bis = ({ note, mention }) => "info : " + mention + "note : " + note;
 ```
 
 ### Exercice permutations
@@ -720,7 +993,7 @@ const students = [
     family: {
       mother: "Isa",
       father: "Philippe",
-      syster: "Sylvie",
+      sister: "Sylvie",
     },
     age: 35,
   },
@@ -729,7 +1002,7 @@ const students = [
     family: {
       mother: "Particia",
       father: "Cécile",
-      syster: "Annie",
+      sister: "Annie",
     },
     age: 55,
   },
@@ -772,7 +1045,7 @@ console.log(stMerge);
 // {s1: "Alan", s2: "Bernard",  s4: "Sophie"}
 ```
 
-Ou simplement mettre à jour une clé
+Un autre exemple de "mise à jour" avec cette technique 
 
 ```js
 const state = {
@@ -787,7 +1060,7 @@ const newState = { ...state, email: "sophie@sophie.fr" };
 
 ## Exercice push value
 
-Soient les données suivantes. Créez un tableau strNumbers et pushez chacune des valeurs de ce tableau sans créer un tableau de tableaux :
+Soient les données suivantes. Créez un tableau strNumbers et pushez chacune des valeurs de ce tableau sans créer un tableau de tableaux. Rappelez-vous qu'une constante bloque uniquement l'assignation, mais si la constante est un objet vous pouvez toujours le modifier.
 
 ```js
 const strNumbers = [];
@@ -812,23 +1085,23 @@ const newState = { ...state, [name]: "bernard@bernard.fr" };
 
 ## Exercice ordre et longueur de mots
 
-Ordonnez par ordre croissant de nombre de lettres le tableau students ci-dessous :
+Utilisez la fonction sort de JS. Voir la documentation de cette fonction.
+
+1. Ordonnez les students par ordre alphabétique. 
+
+2. Ordonnez par ordre croissant en fonction de la longueur des noms.
 
 ```js
 const students = [ "Alan", "Philippe", "Tony", "Geraldine", "Michelle", "Phi" ];
 ```
 
+3. Ordonnez la liste des nombres suivants par ordre croissant :
+
+```js
+const numbers = [ 10, 7, 5, 1, 10, 5];
+```
+
 ## Exercice populations
-
-1. Soit les données suivantes populations, ordonnez-les par ordre croissant par rapport à la longueur des noms.
-
-*Indications : utilisez la méthode **sort**, cette méthode modifie le tableau. Vous pouvez lui passer une fonction (fléchée) pour calculer l'ordre par rapport à une clé du tableau ou un calcul spécifique. Reportez-vous à la documentation : [sort](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Array/sort).*
-
-2. Ajoutez une clé **lenName** aux éléments du tableau populations vous assignerez la longueur de chaque nom à cette variable.
-
-3. Regroupez maintenant dans un nouveau tableau groupNames les noms de même longueur (même nombre de caractères).
-
-*Indications : Imaginez une structure de données, par exemple un tableau de tableau ou un Map, vous pouvez également utiliser **filter** pour regrouper les noms de même longueur dans le nouveau tableau groupNames*
 
 ```js
 const populations = [
@@ -846,6 +1119,42 @@ const populations = [
   { id: 11, name: "Isaac" },
   { id: 12, name: "Ian" },
 ];
+```
+
+1. Soit les données suivantes populations, ordonnez-les par ordre croissant par rapport à la longueur des noms.
+
+*Indications : utilisez la méthode **sort**, cette méthode modifie le tableau. Vous pouvez lui passer une fonction (fléchée) pour calculer l'ordre par rapport à une clé du tableau ou un calcul spécifique. Reportez-vous à la documentation : [sort](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Array/sort).*
+
+2. Ajoutez une clé **lenName** aux éléments du tableau populations vous assignerez la longueur de chaque nom à cette variable.
+
+3. Regroupez maintenant dans un nouveau tableau groupNames les noms de même longueur (même nombre de caractères).
+
+*Indications : Imaginez une structure de données (voir l'exemple ci-après), par exemple un tableau de tableau ou un Map, vous pouvez également utiliser **filter** pour regrouper les noms de même longueur dans le nouveau tableau groupNames*
+
+Présentez les résultats recherchés comme suit par exemple :
+
+```js
+[
+  [ { id: 12, name: 'Ian', lenName: 3 } ],
+  [
+    { id: 0, name: 'Alan', lenName: 4 },
+    { id: 2, name: 'Jhon', lenName: 4 },
+    { id: 5, name: 'Brad', lenName: 4 },
+    { id: 6, name: 'Carl', lenName: 4 }
+  ],
+  [
+    { id: 3, name: 'Brice', lenName: 5 },
+    { id: 9, name: 'Edgar', lenName: 5 },
+    { id: 10, name: 'Erika', lenName: 5 },
+    { id: 11, name: 'Isaac', lenName: 5 }
+  ],
+  [
+    { id: 1, name: 'Albert', lenName: 6 },
+    { id: 7, name: 'Dallas', lenName: 6 },
+    { id: 8, name: 'Dennis', lenName: 6 }
+  ],
+  [ { id: 4, name: 'Alexendra', lenName: 9 } ]
+]
 ```
 
 4. (Facultatif) Ajoutez une clé relation au tableau population et indiquez pour chaque personne les noms de ses relations. Ordonnez ces relations par ordre croissant de nombre de relation. Affichez la personne qui le plus de relation.
@@ -886,5 +1195,54 @@ On peut également intégrer des ternaires comme suit avec les cotes couchés :
 
 ```js
 let isLoading = true;
-const message = `Data is ${isLoading ? `loading...` : `done!`}`;
+const message = `Data is ${isLoading ? 'loading...' : 'done!'}`;
+```
+
+Remarque sur la syntaxe ternaire, très pratique pour écrire une condition sur une ligne :
+
+```js
+
+console.log( true ? 'yes' : 'no'; ); // yes
+console.log( false ? 'yes' : 'no'; ); // no
+
+```
+
+Les ternaires sont très pratiques également pour assigner des valeurs avec une condition :
+
+```js
+logged = true ? 'yes' : 'no'; ; // yes
+
+logeed =  false ? 'yes' : 'no'; ; // no
+
+```
+
+Vous pouvez enchâiner les ternaires mais, attention à la lisibilité de ces derniers.
+
+```js
+logged = true ? ( true ? 'toujours yes' : 'no' )  : 'no'; ; // toujours yes
+```
+
+## Optimisation
+
+**Memory leak**
+
+- JS purge le scope à la sortie de la fonction parente.
+
+- Converse les pp appelées dans les closures.
+
+- y compris les closures qui ne sont plus référencées.
+
+## Ce qui est faux
+
+0, NaN, undefined, false, "", '', ``, null
+
+- Evaluation courcicuit, par exemple user n'est pas défini, mais ne sera pas évalué :
+
+```js
+false && user 
+```
+Une deuxième évaluation courcicuit, renverra true
+
+```js
+true || user
 ```

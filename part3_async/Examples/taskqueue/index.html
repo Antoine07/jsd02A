@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+</head>
+
+<body>
+
+    <div>
+        <button id="btn">
+            Click me
+        </button>
+    </div>
+
+    <script type="text/javascript">
+    (function(){
+        const bt = document.getElementById('btn');
+
+
+        bt.addEventListener('click', () => {
+            console.log(this);
+
+        });
+
+        for (let i = 0; i < 100; i++) {
+            setTimeout(() =>{
+                for (let j = 0; j < 100000; j++) {
+                    (i*j) % Math.round(Math.random() ) 
+                }
+                console.log(`Done ${i}`);
+            },i*1000)
+        }
+    })()
+    </script>
+</body>
+
+</html>
